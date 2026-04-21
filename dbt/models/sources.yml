@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+  - name: silver
+    description: "Cleaned, joined Delta tables on MinIO"
+    meta:
+      external_location: "delta_scan('s3://silver/{name}/')"
+    tables:
+      - name: trips
+        description: "One row per valid trip, joined to hourly weather"
+        columns:
+          - name: trip_id
+            tests: [not_null, unique]
+          - name: pickup_date
+            tests: [not_null]
+          - name: fare_amount
+            tests:
+              - not_null
+              - dbt_utils.accepted_range:
+                  min_value: 0
