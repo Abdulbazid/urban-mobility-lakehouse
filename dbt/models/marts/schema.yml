@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: fct_trips
+    description: "Gold fact: one row per valid trip"
+    columns:
+      - name: trip_id
+        tests: [not_null, unique]
+      - name: pickup_zone_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_zones')
+              field: zone_id
+      - name: total_amount
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: passenger_count
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 1
+              max_value: 6
+      - name: payment_type
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4]
+
+  - name: dim_zones
+    columns:
+      - name: zone_id
+        tests: [not_null, unique]
+      - name: borough
+        tests:
+          - accepted_values:
+              values: ['Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island', 'EWR']
+
+  - name: surge_metrics
+    description: "Answers the business question: surge uplift per zone in bad weather"
+    columns:
+      - name: pickup_zone_name
+        tests: [not_null]
