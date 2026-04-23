@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install ruff pytest
+          pip install -r ingestion/requirements.txt
+
+      - name: Lint (ruff)
+        run: ruff check ingestion transformation orchestration
+
+      - name: Unit tests — ingestion
+        working-directory: ingestion
+        run: pytest -v
+
+      - name: Unit tests — silver logic
+        working-directory: transformation
+        run: pytest -v tests/
+
+  dbt-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dbt-duckdb
+        run: pip install dbt-core==1.8.7 dbt-duckdb==1.8.3
+
+      - name: dbt compile (syntax check)
+        working-directory: dbt
+        env:
+          DBT_PROFILES_DIR: ${{ github.workspace }}/dbt
+        run: |
+          dbt deps
+          dbt parse
