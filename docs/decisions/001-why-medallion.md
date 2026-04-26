@@ -5,7 +5,7 @@
 
 ## Context
 
-We need a layering scheme for a lakehouse that's easy to reason about, easy to rebuild, and recognizable to interviewers.
+We need a layering scheme for a lakehouse that's easy to reason about, easy to rebuild.
 
 ## Decision
 
